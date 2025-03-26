@@ -31,6 +31,16 @@ class Metric:
         drawdown_pct = drawdown / running_max
         max_drawdown_pct = np.max(drawdown_pct)
         return max_drawdown_pct * 100
+
+    def final_pnl(self):
+        return np.sum(self.pnl_per_trade)
+    
+    def print_metrics(self):
+        print(f"Sharpe ratio: {self.sharpe_ratio()}")
+        print(f"Sortino ratio: {self.sortino_ratio()}")
+        print(f"Win rate: {self.win_rate()}")
+        print(f"Maximum drawdown: {self.maximum_drawdown()}%")
+        print(f"Final PnL: {self.final_pnl()}")
     
     def plot_pnl(self):
         plt.plot(np.cumsum(self.pnl_per_trade))
