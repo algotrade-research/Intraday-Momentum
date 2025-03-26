@@ -2,20 +2,22 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 class Intraday_VWAP_strategy:
-    def __init__(self, period):
+    def __init__(self, period, stop_loss = 2, take_profit = 2):
         self.fee = 0.47
         self.intraday_data = pd.DataFrame(columns=['Datetime', 'Price'])
         self.time_point = {
             'start_range': pd.to_datetime('09:00:00').time(),
             'end_range': (datetime.combine(datetime.today(), pd.to_datetime('09:00:00').time()) + timedelta(minutes = period)).time(),
+            'end_morning_session': pd.to_datetime('11:30:00').time(),
+            'start_afternoon_session': pd.to_datetime('13:00:00').time(),
             'end_day': pd.to_datetime('14:29:00').time(),
         }
         self.holding = {"signal": None, "entry_point": None}
         self.accumulate_price = 0
         self.accumulate_volume = 0
         self.daily_return = None
-        self.stop_loss = 2
-        self.take_profit = 2
+        self.stop_loss = stop_loss
+        self.take_profit = take_profit
 
     def get_signal(self, price):
         if self.accumulate_volume == 0:
@@ -37,6 +39,10 @@ class Intraday_VWAP_strategy:
             return 'PREPARE'
         elif datetime.time() <= self.time_point['end_range']:
             return 'COLLECT'
+        elif datetime.time() < self.time_point['end_morning_session']:
+            return 'TRADE'
+        elif datetime.time() < self.time_point['start_afternoon_session']:
+            return 'PREPARE'
         elif datetime.time() < self.time_point['end_day']:
             return 'TRADE'
         else:

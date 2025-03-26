@@ -2,40 +2,58 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 class Intraday_ORB_strategy:
-    def __init__(self, period):
+    def __init__(self, period, stop_loss = 2, take_profit = 2):
         self.fee = 0.47
         self.intraday_data = pd.DataFrame(columns=['Datetime', 'Price'])
         self.time_point = {
             'start_range': pd.to_datetime('09:00:00').time(),
             'end_range': (datetime.combine(datetime.today(), pd.to_datetime('09:00:00').time()) + timedelta(minutes = period)).time(),
+            'end_morning_session': pd.to_datetime('11:30:00').time(),
+            'start_afternoon_session': pd.to_datetime('13:00:00').time(),
             'end_day': pd.to_datetime('14:29:00').time(),
         }
         self.holding = {"signal": None, "entry_point": None}
-        self.first_candle_prices = {"open": None, "close": None}
+        self.first_candle_prices = {"open": None, "close": None, "high": None, "low": None}
         self.daily_return = None
-        self.stop_loss = 2
-        self.take_profit = 2
+        self.stop_loss = stop_loss
+        self.stop_loss_price = None
+        self.take_profit = take_profit
 
     def get_signal(self):
         if self.first_candle_prices['open'] is None \
             or self.first_candle_prices['close'] is None \
-            or abs(self.first_candle_prices['open'] - self.first_candle_prices['close']) < 0.5:
+            or abs(self.first_candle_prices['open'] - self.first_candle_prices['close']) < 0.01:
             return None
         
-        if self.first_candle_prices['open'] <= self.first_candle_prices['close'] - 0.5:
+        if self.first_candle_prices['open'] < self.first_candle_prices['close']:
+            self.stop_loss_price = self.first_candle_prices['low']
             return 'LONG'
 
-        if self.first_candle_prices['open'] >= self.first_candle_prices['close'] + 0.5:
+        if self.first_candle_prices['open'] > self.first_candle_prices['close']:
+            self.stop_loss_price = self.first_candle_prices['high']
             return 'SHORT'
+        
+    def get_stop_loss_signal(self, price):
+        if self.holding['signal'] == 'LONG':
+            if price < self.stop_loss_price:
+                return True
+        elif self.holding['signal'] == 'SHORT':
+            if price > self.stop_loss_price:
+                return True
+        return False
     
     def get_return(self):
         return self.daily_return
     
-    def handle_timestamp(self, datetime, price):
+    def handle_timestamp(self, datetime):
         if datetime.time() < self.time_point['start_range']:
             return 'PREPARE'
         elif datetime.time() <= self.time_point['end_range']:
             return 'COLLECT'
+        elif datetime.time() < self.time_point['end_morning_session']:
+            return 'TRADE'
+        elif datetime.time() < self.time_point['start_afternoon_session']:
+            return 'PREPARE'
         elif datetime.time() < self.time_point['end_day']:
             return 'TRADE'
         else:
@@ -45,6 +63,10 @@ class Intraday_ORB_strategy:
         if self.first_candle_prices['open'] is None:
             self.first_candle_prices['open'] = price
         self.first_candle_prices['close'] = price
+        if self.first_candle_prices['high'] is None or price > self.first_candle_prices['high']:
+            self.first_candle_prices['high'] = price
+        if self.first_candle_prices['low'] is None or price < self.first_candle_prices['low']:
+            self.first_candle_prices['low'] = price
     
     def trade(self, price):
         if self.daily_return is not None:
@@ -62,11 +84,11 @@ class Intraday_ORB_strategy:
         else:
             diff = price - self.holding['entry_point']
             if self.holding['signal'] == 'LONG':
-                if diff > self.take_profit or diff < -self.stop_loss:
+                if diff > self.take_profit or self.get_stop_loss_signal(price):
                     self.daily_return = diff - self.fee
                     return
             elif self.holding['signal'] == 'SHORT':
-                if diff < -self.take_profit or diff > self.stop_loss:
+                if diff < -self.take_profit or self.get_stop_loss_signal(price):
                     self.daily_return = -diff - self.fee
                     return
     
@@ -87,7 +109,7 @@ class Intraday_ORB_strategy:
         if self.daily_return is not None:
             return
         
-        time_status = self.handle_timestamp(datetime, price)
+        time_status = self.handle_timestamp(datetime)
 
         if time_status == 'PREPARE':
             return
