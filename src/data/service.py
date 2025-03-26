@@ -8,8 +8,17 @@ from src.data.query import *
 from config.config import *
 
 class DataService:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(DataService, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
+
     def __init__(self):
-        self.connection = psycopg2.connect(**db_params)
+        if not hasattr(self, 'initialized'):
+            self.connection = psycopg2.connect(**db_params)
+            self.initialized = True
 
     def create_data_folder(self):
         if not os.path.exists("trading_data"):
