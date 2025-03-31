@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 class Intraday_ORB_strategy:
-    def __init__(self, period, stop_loss = 2, take_profit = 2):
+    def __init__(self, period, take_profit = 2):
         self.fee = 0.47
         self.intraday_data = pd.DataFrame(columns=['Datetime', 'Price'])
         self.time_point = {
@@ -15,14 +15,13 @@ class Intraday_ORB_strategy:
         self.holding = {"signal": None, "entry_point": None}
         self.first_candle_prices = {"open": None, "close": None, "high": None, "low": None}
         self.daily_return = None
-        self.stop_loss = stop_loss
         self.stop_loss_price = None
         self.take_profit = take_profit
 
     def get_signal(self):
         if self.first_candle_prices['open'] is None \
             or self.first_candle_prices['close'] is None \
-            or abs(self.first_candle_prices['open'] - self.first_candle_prices['close']) < 0.01:
+            or abs(self.first_candle_prices['open'] - self.first_candle_prices['close']) < 0.47:
             return None
         
         if self.first_candle_prices['open'] < self.first_candle_prices['close']:
