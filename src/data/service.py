@@ -52,10 +52,13 @@ class DataService:
 
         return matched
 
-    def get_tick_price(self, year):
+    def get_tick_price(self, year, quarter = None):
         tick = pd.read_csv(f"trading_data/{year}_tick.csv")
         tick['Datetime'] = pd.to_datetime(tick['Datetime'])
+        if quarter:
+            tick = tick[tick['Datetime'].dt.quarter == quarter]
         return tick
+    
 
     # def get_daily(self, year):
     #     from_date = f"{year}-01-01"

@@ -1,9 +1,7 @@
 import optuna
 from optuna.samplers import RandomSampler
 import json
-
-from src.metrics.metric import Metric
-from src.data.service import DataService
+import os
 from src.backtesting.backtesting import Backtesting
 
 class Optimizer:
@@ -23,57 +21,49 @@ class Optimizer:
         }
         self.trials = 20
         self.seed = 42
+        self.folder = 'optimize'
+        self._create_folder()
+
+    def _create_folder(self):
+        if not os.path.exists(self.folder):
+            os.makedirs(self.folder)
     
     def ORB_optimize(self): 
-        def objective(trial):
-            # Suggest values for the hyperparameters
-            period = trial.suggest_int('period', self.ranges['ORB']['period'][0], self.ranges['ORB']['period'][1])
-            stop_loss = trial.suggest_int('stop_loss', self.ranges['ORB']['stop_loss'][0], self.ranges['ORB']['stop_loss'][1])
-            take_profit = trial.suggest_int('take_profit', self.ranges['ORB']['take_profit'][0], self.ranges['ORB']['take_profit'][1])
-            
-            # Run the ORB strategy with the suggested hyperparameters
-            backtesting = Backtesting(self.data)
-            metric = backtesting.ORB_strategy(period=period, stop_loss=stop_loss, take_profit=take_profit)
-            
-            # Return the negative Sharpe ratio (since Optuna minimizes the objective function)
-            return -metric.sharpe_ratio()
-        
-        # Create a study object and optimize the objective function
-        study = optuna.create_study(sampler=RandomSampler(seed=self.seed), direction='minimize')
-        study.optimize(objective, n_trials=self.trials)
-        
-        # Print the best hyperparameters
-        print("Finished optimization for ORB strategy")
-        print(f"Best hyperparameters: {study.best_params}")
-        print(f"Best Sharpe ratio: {-study.best_value}")
+        optimize_parameters = {
+            'period': 0,
+            'condition_diff': 0
+        }
+        max_sharpe_ratio = 0
+        backtesting = Backtesting(self.data)
+        for i in range(52, 56):
+            for j in range(2, 10):
+                metric = backtesting.ORB_strategy(period=i, take_profit=2, condition_diff=j)
+                if metric.sharpe_ratio() > max_sharpe_ratio:
+                    max_sharpe_ratio = metric.sharpe_ratio()
+                    optimize_parameters['period'] = i
+                    optimize_parameters['condition_diff'] = j
+                print(f"period={i}, condition_diff={j}, Sharpe ratio={metric.sharpe_ratio()}")
 
-        # Save the best hyperparameters into a json file
-        with open('orb_best_hyperparameters.json', 'w') as f:
-            json.dump(study.best_params, f, indent=4)
+        print("Finished optimization for ORB strategy")
+        print(f"Best hyperparameters: {optimize_parameters}")
+        print(f"Best Sharpe ratio: {max_sharpe_ratio}")
 
     def VWAP_optimize(self):
-        def objective(trial):
-            # Suggest values for the hyperparameters
-            period = trial.suggest_int('period', self.ranges['VWAP']['period'][0], self.ranges['VWAP']['period'][1])
-            stop_loss = trial.suggest_int('stop_loss', self.ranges['VWAP']['stop_loss'][0], self.ranges['VWAP']['stop_loss'][1])
-            take_profit = trial.suggest_int('take_profit', self.ranges['VWAP']['take_profit'][0], self.ranges['VWAP']['take_profit'][1])
-            
-            # Run the VWAP strategy with the suggested hyperparameters
-            backtesting = Backtesting(self.data)
-            metric = backtesting.VWAP_strategy(period=period, stop_loss=stop_loss, take_profit=take_profit)
-            
-            # Return the negative Sharpe ratio (since Optuna minimizes the objective function)
-            return -metric.sharpe_ratio()
-        
-        # Create a study object and optimize the objective function
-        study = optuna.create_study(sampler=RandomSampler(seed=self.seed), direction='minimize')
-        study.optimize(objective, n_trials=self.trials)
-        
-        # Print the best hyperparameters
+        optimize_parameters = {
+            'period': 0,
+            'condition_diff': 0
+        }
+        max_sharpe_ratio = 0
+        backtesting = Backtesting(self.data)
+        for i in range(33, 37):
+            for j in range(1, 10):
+                metric = backtesting.VWAP_strategy(period=i, take_profit=2, condition_diff=j)
+                if metric.sharpe_ratio() > max_sharpe_ratio:
+                    max_sharpe_ratio = metric.sharpe_ratio()
+                    optimize_parameters['period'] = i
+                    optimize_parameters['condition_diff'] = j
+                print(f"period={i}, diff={j}, Sharpe ratio={metric.sharpe_ratio()}")
         print("Finished optimization for VWAP strategy")
-        print(f"Best hyperparameters: {study.best_params}")
-        print(f"Best Sharpe ratio: {-study.best_value}")
+        print(f"Best hyperparameters: {optimize_parameters}")
+        print(f"Best Sharpe ratio: {max_sharpe_ratio}")
 
-        # Save the best hyperparameters into a json file
-        with open('vwap_best_hyperparameters.json', 'w') as f:
-            json.dump(study.best_params, f, indent=4)
