@@ -35,8 +35,16 @@ class Optimizer:
         }
         max_sharpe_ratio = 0
         backtesting = Backtesting(self.data)
-        for i in range(52, 56):
-            for j in range(2, 10):
+        for i in range(5, 150, 5):
+            metric = backtesting.ORB_strategy(period=i, take_profit=2, condition_diff=1)
+            if metric.sharpe_ratio() > max_sharpe_ratio:
+                max_sharpe_ratio = metric.sharpe_ratio()
+                optimize_parameters['period'] = i
+                optimize_parameters['condition_diff'] = 1
+                print(f"period={i}, condition_diff=1, Sharpe ratio={metric.sharpe_ratio()}")
+
+        for i in range(optimize_parameters['period'] - 5, optimize_parameters['period'] + 5):
+            for j in range(1, 10):
                 metric = backtesting.ORB_strategy(period=i, take_profit=2, condition_diff=j)
                 if metric.sharpe_ratio() > max_sharpe_ratio:
                     max_sharpe_ratio = metric.sharpe_ratio()
@@ -47,6 +55,8 @@ class Optimizer:
         print("Finished optimization for ORB strategy")
         print(f"Best hyperparameters: {optimize_parameters}")
         print(f"Best Sharpe ratio: {max_sharpe_ratio}")
+        with open('optimize\ORB_optimize_result.json', 'w') as f:
+            json.dump(optimize_parameters, f)
 
     def VWAP_optimize(self):
         optimize_parameters = {
@@ -55,7 +65,15 @@ class Optimizer:
         }
         max_sharpe_ratio = 0
         backtesting = Backtesting(self.data)
-        for i in range(33, 37):
+        for i in range(5, 150, 5):
+            metric = backtesting.VWAP_strategy(period=i, take_profit=2, condition_diff=1)
+            if metric.sharpe_ratio() > max_sharpe_ratio:
+                max_sharpe_ratio = metric.sharpe_ratio()
+                optimize_parameters['period'] = i
+                optimize_parameters['condition_diff'] = 1
+            print(f"period={i}, condition_diff=1, Sharpe ratio={metric.sharpe_ratio()}")
+
+        for i in range(optimize_parameters['period'] - 5, optimize_parameters['period'] + 5):
             for j in range(1, 10):
                 metric = backtesting.VWAP_strategy(period=i, take_profit=2, condition_diff=j)
                 if metric.sharpe_ratio() > max_sharpe_ratio:
@@ -66,4 +84,5 @@ class Optimizer:
         print("Finished optimization for VWAP strategy")
         print(f"Best hyperparameters: {optimize_parameters}")
         print(f"Best Sharpe ratio: {max_sharpe_ratio}")
-
+        with open('optimize\VWAP_optimize_result.json', 'w') as f:
+            json.dump(optimize_parameters, f)

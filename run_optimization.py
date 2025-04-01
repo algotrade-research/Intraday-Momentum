@@ -9,9 +9,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     in_sample_data_2021 = DataService().get_tick_price(2021)
     in_sample_data_2022 = DataService().get_tick_price(2022)
-    in_sample_data_2023_1 = DataService().get_tick_price(2023, 1)
-    in_sample_data_2023_2 = DataService().get_tick_price(2023, 2)
-    in_sample_data = pd.concat([in_sample_data_2021, in_sample_data_2022, in_sample_data_2023_1, in_sample_data_2023_2], ignore_index=True)
+    in_sample_data = pd.concat([in_sample_data_2021, in_sample_data_2022], ignore_index=True)
     optimizer = Optimizer(in_sample_data)
     if args.strategy == 'ORB':
         optimizer.ORB_optimize()
