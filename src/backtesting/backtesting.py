@@ -12,9 +12,7 @@ class Backtesting:
         self.length_data = len(tick_data)
 
     def ORB_strategy(self, period = 5, take_profit = 2, condition_diff = 2):
-        asset = 1000
         returns = []
-        cost = 0.47
         
         l = 0
         date_list = self.tick_data['Datetime'].dt.date
@@ -29,7 +27,6 @@ class Backtesting:
                 if trade_day.get_return() is not None:
                     break
             daily_return = trade_day.get_return()
-            asset += daily_return
             returns.append(daily_return)
             l = r
         
@@ -37,9 +34,7 @@ class Backtesting:
         return metric
 
     def VWAP_strategy(self, period = 5, take_profit = 2, condition_diff = 0):
-        asset = 1000
         returns = []
-        cost = 0.47
 
         l = 0
         date_list = self.tick_data['Datetime'].dt.date
@@ -54,7 +49,6 @@ class Backtesting:
                 if trade_day.get_return() is not None:
                     break
             daily_return = trade_day.get_return()
-            asset += daily_return
             returns.append(daily_return)
             l = r
 
@@ -62,7 +56,6 @@ class Backtesting:
         return metric
     
     def Market_Timing_strategy(self, period = 5, take_profit = 2, condition_diff = 2):
-        asset = 1000
         returns = []
         
         l = 0
@@ -78,7 +71,6 @@ class Backtesting:
                 if trade_day.get_return() is not None:
                     break
             daily_return = trade_day.get_return()
-            asset += daily_return
             returns.append(daily_return)
             l = r
         
