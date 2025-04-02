@@ -25,9 +25,12 @@ class DataService:
             os.makedirs("trading_data")
 
         for i in range(2021, 2025):
-            tick = self.__fetch_tick_price(i)
-
-            tick.to_csv(f"trading_data/{i}_tick.csv", index=False)
+            if not os.path.exists(f"trading_data/{i}_tick.csv"):
+                tick = self.__fetch_tick_price(i)
+                tick.to_csv(f"trading_data/{i}_tick.csv", index=False)
+            if not os.path.exists(f"trading_data/{i}_VNINDEX.csv"):
+                vnindex = self.__fetch_vnindex(i)
+                vnindex.to_csv(f"trading_data/{i}_VNINDEX.csv", index=False)
 
     def __execute_query(self, query, from_date, to_date):
         cursor = self.connection.cursor()
@@ -51,6 +54,17 @@ class DataService:
         matched = matched.astype({"Price": float, "Volume": int})
 
         return matched
+    
+    def __fetch_vnindex(self, year):
+        from_date = f"{year}-01-01"
+        to_date = f"{year}-12-31"
+
+        columns = ["Datetime", "Open", "Close"]
+        vnindex = pd.DataFrame(self.__execute_query(VNINDEX_open_close, from_date, to_date), columns=columns)
+        vnindex = vnindex.astype({"Open": float, "Close": float})
+
+        return vnindex
+    
 
     def get_tick_price(self, year, quarter = None):
         tick = pd.read_csv(f"trading_data/{year}_tick.csv")
@@ -59,14 +73,7 @@ class DataService:
             tick = tick[tick['Datetime'].dt.quarter == quarter]
         return tick
     
-
-    # def get_daily(self, year):
-    #     from_date = f"{year}-01-01"
-    #     to_date = f"{year}-12-31"
-
-    #     columns = ["Datetime", "Open", "Close", "High", "Low"]
-    #     daily = pd.DataFrame(self.execute_query(daily_query, from_date, to_date), columns=columns)
-    #     daily = daily.astype({"Open": float, "Close": float, "High": float, "Low": float})
-
-    #     return daily
-
+    def get_vnindex(self, year):
+        vnindex = pd.read_csv(f"trading_data/{year}_VNINDEX.csv")
+        vnindex['Datetime'] = pd.to_datetime(vnindex['Datetime'])
+        return vnindex

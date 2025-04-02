@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from math import sqrt
 
 class Metric: 
-    def __init__(self, pnl_per_trade):
+    def __init__(self, pnl_per_trade, benchmark_metric=None, is_benchmark=False):
         self.pnl_per_trade = pnl_per_trade
         self.num_trades = len(pnl_per_trade)
         self.std_dev_pnl = pnl_per_trade.std()
@@ -12,7 +12,9 @@ class Metric:
         self.annual_risk_free_rate = 0.03  # 3% annually
         self.daily_risk_free_rate = self.annual_risk_free_rate / self.period  # Daily rate
         self.initial_capital = 500
-    
+        self.is_benchmark = is_benchmark
+        self.benchmark_metric = benchmark_metric
+
     def sharpe_ratio(self):
         """
         Calculate Sharpe ratio using percentage returns derived from absolute PnL values.
@@ -55,12 +57,10 @@ class Metric:
         # Get total holding period return
         holding_return = self.holding_period_return()
         
-        # Calculate risk-free return over the same period
-        years = self.num_trades / 250
-        risk_free_return = (1 + self.annual_risk_free_rate) ** years - 1
-        
-        # Calculate excess return
-        return holding_return - risk_free_return
+        if self.is_benchmark:
+            return None
+        else:
+            return holding_return - self.benchmark_metric.holding_period_return()
     
     def annualized_return(self):
         """
@@ -96,18 +96,25 @@ class Metric:
         return np.sum(self.pnl_per_trade)
     
     def print_metrics(self):
-        print(f"Holding period return: {self.holding_period_return() * 100}%")
-        print(f"Excess holding period return: {self.excess_holding_period_return() * 100}%")
-        print(f"Annualized return: {self.annualized_return() * 100}%")
-        print(f"Annualized excess return: {self.annualized_excess_return() * 100}%")
-        print(f"Maximum drawdown: {self.maximum_drawdown()}%")
-        print(f"Longest drawdown: {self.longest_drawdown()}")
-        print(f"Turnover ratio: {self.turnover_ratio()}")
-        print(f"Sharpe ratio: {self.sharpe_ratio()}")
-        print(f"Sortino ratio: {self.sortino_ratio()}")
-        print(f"Information ratio: {self.information_ratio()}")
-        print(f"Final PnL: {self.final_pnl()}")
-    
+        if not self.is_benchmark:
+            print(f"Holding period return: {self.holding_period_return() * 100}%")
+            print(f"Excess holding period return: {self.excess_holding_period_return() * 100}%")
+            print(f"Annualized return: {self.annualized_return() * 100}%")
+            print(f"Annualized excess return: {self.annualized_excess_return() * 100}%")
+            print(f"Maximum drawdown: {self.maximum_drawdown()}%")
+            print(f"Longest drawdown: {self.longest_drawdown()}")
+            print(f"Turnover ratio: {self.turnover_ratio()}")
+            print(f"Sharpe ratio: {self.sharpe_ratio()}")
+            print(f"Sortino ratio: {self.sortino_ratio()}")
+            print(f"Information ratio: {self.information_ratio()}")
+            print(f"Final PnL: {self.final_pnl()}")
+        else:
+            print(f"Holding period return: {self.holding_period_return() * 100}%")
+            print(f"Annualized return: {self.annualized_return() * 100}%")
+            print(f"Maximum drawdown: {self.maximum_drawdown()}%")
+            print(f"Longest drawdown: {self.longest_drawdown()}")
+            print(f"Sharpe ratio: {self.sharpe_ratio()}")
+            print(f"Sortino ratio: {self.sortino_ratio()}")
     
     def plot_pnl(self):
         plt.plot(np.cumsum(self.pnl_per_trade))
@@ -123,13 +130,10 @@ class Metric:
         # Calculate annualized return first
         annualized = self.annualized_return()
         
-        # Calculate annual risk-free rate
-        annual_risk_free_rate = self.annual_risk_free_rate
-        
-        # Calculate excess return
-        excess_return = annualized - annual_risk_free_rate
-        
-        return excess_return
+        if self.is_benchmark:
+            return None
+        else:
+            return annualized - self.benchmark_metric.annualized_return()
 
     def longest_drawdown(self):
         cum_pnl = np.cumsum(self.pnl_per_trade) + np.ones(self.num_trades) * self.initial_capital
@@ -215,24 +219,18 @@ class Metric:
         
         print(f"Plot saved to {save_path}")
 
-    def information_ratio(self, benchmark_returns=None):
+    def information_ratio(self):
         """
         Calculate Information Ratio with percentage returns.
         """
         # Convert absolute PnL to percentage returns
         percentage_returns = self.pnl_per_trade / self.initial_capital
-        
-        if benchmark_returns is None:
-            # Use daily risk-free rate as benchmark
-            excess_returns = percentage_returns - self.daily_risk_free_rate
-        else:
-            # Ensure benchmark returns have the same length
-            if len(benchmark_returns) != self.num_trades:
-                raise ValueError("Benchmark returns must have the same length as strategy returns")
-            excess_returns = percentage_returns - benchmark_returns
-        
+        benchmark_returns = self.benchmark_metric.pnl_per_trade / self.benchmark_metric.initial_capital
+
+        excess_returns = percentage_returns - benchmark_returns
+
         # Calculate tracking error
-        tracking_error = np.std(excess_returns)
+        tracking_error = np.std(percentage_returns - benchmark_returns)
         
         # Calculate Information Ratio
         ir = (np.mean(excess_returns) / tracking_error) * sqrt(self.period)

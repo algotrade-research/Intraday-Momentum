@@ -9,6 +9,15 @@ matched_tick_query = """
   order by m.datetime
 """
 
+VNINDEX_open_close = """
+  select open_price.datetime, open_price.price as open, close_price.price as close
+  from quote.open open_price
+  join quote.close close_price
+  on date(close_price.datetime) = date(open_price.datetime) and open_price.tickersymbol = close_price.tickersymbol
+  where open_price.tickersymbol = 'VNINDEX' and open_price.datetime between %s and %s
+  order by open_price.datetime 
+"""
+
 daily_query = """
   select max_price.datetime, open_price.price as open, close_price.price as close, max_price.price as high, min_price.price as low
   from quote.max max_price
