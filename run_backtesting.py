@@ -61,7 +61,7 @@ if __name__ == "__main__":
             pnl_per_trade, date_per_trade = backtesting.VWAP_strategy(30, 2, 1)
             metric = Metric(pd.Series(pnl_per_trade), benchmark_metric, is_benchmark=False)
         elif args.parameter == 1:
-            pnl_per_trade, date_per_trade = backtesting.VWAP_strategy(33, 2, 3)
+            pnl_per_trade, date_per_trade = backtesting.VWAP_strategy(33, 3, 3)
             metric = Metric(pd.Series(pnl_per_trade), benchmark_metric, is_benchmark=False)
         print('VWAP strategy:')
         metric.print_metrics()

@@ -95,6 +95,12 @@ class Metric:
     def final_pnl(self):
         return np.sum(self.pnl_per_trade)
     
+    def final_excess_return(self):
+        if self.is_benchmark:
+            return None
+        else:
+            return (self.final_pnl() - self.benchmark_metric.final_pnl()) / self.initial_capital
+    
     def print_metrics(self):
         if not self.is_benchmark:
             print(f"Holding period return: {self.holding_period_return() * 100}%")
@@ -108,6 +114,7 @@ class Metric:
             print(f"Sortino ratio: {self.sortino_ratio()}")
             print(f"Information ratio: {self.information_ratio()}")
             print(f"Final PnL: {self.final_pnl()}")
+            print(f"Final excess return: {self.final_excess_return() * 100}%")
         else:
             print(f"Holding period return: {self.holding_period_return() * 100}%")
             print(f"Annualized return: {self.annualized_return() * 100}%")
