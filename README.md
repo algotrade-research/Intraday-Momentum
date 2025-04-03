@@ -12,10 +12,10 @@ This project tries to test whether a fixed time window from the beginning of VN3
 
 **Feature**
 
-- [ ] Generate Mock Data for unit testing
-- [ ] Validate Test Case: Financial, Technical Signal and Backtesting
-- [ ] Optimize hyperparameters
-- [ ] Evaluate backtesting and optimization
+- [x] Generate Mock Data for unit testing
+- [x] Validate Test Case: Financial, Technical Signal and Backtesting
+- [x] Optimize hyperparameters
+- [x] Evaluate backtesting and optimization
 - [ ] Paper trade
 
 **Installation**
@@ -38,7 +38,7 @@ Over the years, the n-minute ORB, with variants including 5-minute, 15-minute, 3
 The first fixed time window of VN30F1M market could predict the next trend of market.  
 
 # Data
-I use the tick data including datetime, matched price and matched volume of VN30F1M from 2021-06-01 to 2024-12-31. In particular, In-Sample data is from 2021-06-01 to 2022-12-31 and Out-of-Sample data is from 2023-01-01 to 2024-12-31.
+I use the tick data including datetime, matched price and matched volume of VN30F1M from 2021-06-01 to 2024-12-31. In particular, the In-sample data is from 2021-06-01 to 2022-12-31 and Out-of-Sample data is from 2023-01-01 to 2024-12-31.
 ## Data Collection
 - Create .env file and enter your data source configuration with the format
 ```
@@ -127,4 +127,5 @@ After optimization, I found out that both strategies are optimal with the 33-min
 
 # Reference
 [1] Zarattini, Carlo, Andrea Barbon, and Andrew Aziz. "A Profitable Day Trading Strategy For The US Equity Market." Available at SSRN (2024).
+
 [2] Zarattini, Carlo, and Andrew Aziz. "Volume weighted average price (vwap) the holy grail for day trading systems." Available at SSRN 4631351 (2023).
