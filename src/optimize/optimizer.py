@@ -74,7 +74,8 @@ class Optimizer:
     def VWAP_optimize(self):
         optimize_parameters = {
             'period': 0,
-            'condition_diff': 0
+            'condition_diff': 0,
+            'take_profit': 0
         }
         max_sharpe_ratio = 0
         backtesting = Backtesting(self.data)
