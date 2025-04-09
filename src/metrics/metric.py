@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from math import sqrt
 
 class Metric: 
-    def __init__(self, pnl_per_trade, benchmark_metric=None, is_benchmark=False):
+    def __init__(self, pnl_per_trade, list_dates, benchmark_metric=None, is_benchmark=False):
         self.pnl_per_trade = pnl_per_trade
         self.num_trades = len(pnl_per_trade)
         self.std_dev_pnl = pnl_per_trade.std()
@@ -14,6 +14,8 @@ class Metric:
         self.initial_capital = 500
         self.is_benchmark = is_benchmark
         self.benchmark_metric = benchmark_metric
+        self.scale_to_VND = 100000
+        self.list_dates = list_dates
 
     def sharpe_ratio(self):
         """
@@ -190,40 +192,68 @@ class Metric:
 
     def plot_asset_value(self, save_path='asset_value_plot.png'):
         """
-        Plot the asset value (cumulative PnL + initial capital) over time and save it to a file.
-        
+        Plot the asset value (cumulative PnL + initial capital) for both the portfolio
+        and the benchmark (if available) over time using actual trade dates and save it to a file.
+
+        Assumes self.date_trade is a list or array of datetime objects.
+
         Parameters:
         -----------
         save_path : str
             The file path where the plot will be saved
         """
-        # Calculate cumulative asset value
-        cum_pnl = np.cumsum(self.pnl_per_trade)
-        asset_value = cum_pnl + self.initial_capital
-        
-        # Create x-axis (trade numbers)
-        trades = np.arange(1, self.num_trades + 1)
-        
+        # Calculate portfolio cumulative asset value
+        portfolio_cum_pnl = np.cumsum(self.pnl_per_trade)
+        portfolio_asset_value = (portfolio_cum_pnl + self.initial_capital) * self.scale_to_VND
+
+        # Use the datetime objects directly for the x-axis
+        dates = self.list_dates
+        x_label = 'Date' # We know it's dates now
+
         # Create the plot
-        plt.figure(figsize=(10, 6))
-        plt.plot(trades, asset_value, 'b-', linewidth=2)
-        plt.axhline(y=self.initial_capital, color='r', linestyle='--', label='Initial Capital')
-        
+        plt.figure(figsize=(12, 7)) # Slightly larger figure for two lines
+
+        # Plot portfolio asset value vs Date
+        plt.plot(dates, portfolio_asset_value, 'b-', linewidth=2, label='Portfolio')
+
+        # Plot benchmark asset value if available, using the same dates
+        if not self.is_benchmark and self.benchmark_metric is not None:
+            # Ensure benchmark has the same number of data points corresponding to the dates
+            if len(self.benchmark_metric.pnl_per_trade) == len(dates):
+                benchmark_cum_pnl = np.cumsum(self.benchmark_metric.pnl_per_trade)
+                # Assume benchmark uses the same scaling and initial capital for comparison
+                benchmark_asset_value = (benchmark_cum_pnl + self.benchmark_metric.initial_capital) * self.benchmark_metric.scale_to_VND
+                # Ensure benchmark dates align if available, otherwise plot against portfolio dates
+                benchmark_dates = getattr(self.benchmark_metric, 'date_trade', dates)
+                if len(benchmark_dates) != len(benchmark_asset_value):
+                    print("Warning: Benchmark dates length mismatch. Using portfolio dates.")
+                    benchmark_dates = dates
+
+                plt.plot(benchmark_dates, benchmark_asset_value, 'g-', linewidth=2, label='VNINDEX')
+            else:
+                print("Warning: Benchmark PnL data length does not match portfolio data length. Cannot plot benchmark.")
+
+        # Plot initial capital line (scaled)
+        plt.axhline(y=self.initial_capital * self.scale_to_VND, color='r', linestyle='--', label='Initial Capital')
+
         # Add labels and title
-        plt.xlabel('Trade Number')
-        plt.ylabel('Asset Value')
-        plt.title('Asset Value Over Time')
+        plt.xlabel(x_label) # Use 'Date' label
+        plt.ylabel(f'Asset Value (scaled by {self.scale_to_VND})')
+        plt.title('Portfolio vs Benchmark Asset Value Over Time')
         plt.grid(True)
-        plt.legend()
-        
+        plt.legend() # Show legend with labels
+
+        # Improve date formatting on x-axis
+        plt.gcf().autofmt_xdate() # Auto-formats date labels for better readability
+
         # No annotation
-        
+
         plt.tight_layout()
-        
+
         # Save the figure
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()  # Close the figure to free memory
-        
+
         print(f"Plot saved to {save_path}")
 
     def information_ratio(self):

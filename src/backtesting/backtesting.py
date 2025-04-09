@@ -82,7 +82,9 @@ class Backtesting:
     
     def VNINDEX_benchmark(self):
         pnl_per_trade = []
+        date_trade = []
         for i in range(self.length_data - 1):
             pnl_per_trade.append(self.data['Close'][i+1] - self.data['Close'][i])
+            date_trade.append(self.data['Datetime'])
         
-        return pnl_per_trade
+        return pnl_per_trade, date_trade

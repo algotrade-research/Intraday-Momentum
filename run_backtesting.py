@@ -13,6 +13,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     data_service = DataService()
+
     if args.mode == 0:
         # In-sample data
         in_sample_data_2021 = DataService().get_tick_price(2021)
@@ -37,7 +38,8 @@ if __name__ == "__main__":
     backtesting = Backtesting(tick_data)
 
     backtesting_benchmark = Backtesting(benchmark_data)
-    benchmark_metric = Metric(pd.Series(backtesting_benchmark.VNINDEX_benchmark()), is_benchmark=True)
+    VNINDEX_pnl_per_trade, VNINDEX_date = backtesting_benchmark.VNINDEX_benchmark()
+    benchmark_metric = Metric(pd.Series(VNINDEX_pnl_per_trade), VNINDEX_date, is_benchmark=True)
     
     print('Benchmark metric:')
     benchmark_metric.print_metrics()
@@ -45,10 +47,10 @@ if __name__ == "__main__":
     if args.strategy == 'ORB':
         if args.parameter == 0:
             pnl_per_trade, date_per_trade = backtesting.ORB_strategy(30, 2, 1)
-            metric = Metric(pd.Series(pnl_per_trade), benchmark_metric, is_benchmark=False)
+            metric = Metric(pd.Series(pnl_per_trade), date_per_trade, benchmark_metric, is_benchmark=False)
         elif args.parameter == 1:
             pnl_per_trade, date_per_trade = backtesting.ORB_strategy(33, 2, 5)
-            metric = Metric(pd.Series(pnl_per_trade), benchmark_metric, is_benchmark=False)
+            metric = Metric(pd.Series(pnl_per_trade), date_per_trade, benchmark_metric, is_benchmark=False)
         print('ORB strategy:')
         metric.print_metrics()
         metric.plot_asset_value(save_path='img/ORB_asset_value.png')
@@ -59,10 +61,10 @@ if __name__ == "__main__":
     if args.strategy == 'VWAP':
         if args.parameter == 0:
             pnl_per_trade, date_per_trade = backtesting.VWAP_strategy(30, 2, 1)
-            metric = Metric(pd.Series(pnl_per_trade), benchmark_metric, is_benchmark=False)
+            metric = Metric(pd.Series(pnl_per_trade), date_per_trade, benchmark_metric, is_benchmark=False)
         elif args.parameter == 1:
             pnl_per_trade, date_per_trade = backtesting.VWAP_strategy(33, 3, 3)
-            metric = Metric(pd.Series(pnl_per_trade), benchmark_metric, is_benchmark=False)
+            metric = Metric(pd.Series(pnl_per_trade), date_per_trade, benchmark_metric, is_benchmark=False)
         print('VWAP strategy:')
         metric.print_metrics()
         metric.plot_asset_value(save_path='img/VWAP_asset_value.png')

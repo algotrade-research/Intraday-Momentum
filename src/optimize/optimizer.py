@@ -40,7 +40,7 @@ class Optimizer:
         backtesting = Backtesting(self.data)
         for i in range(5, 150, 5):
             pnl_per_trade, date_per_trade = backtesting.ORB_strategy(period=i, take_profit=2, condition_diff=1)
-            metric = Metric(pd.Series(pnl_per_trade), None, is_benchmark=True)
+            metric = Metric(pd.Series(pnl_per_trade), date_per_trade, None, is_benchmark=True)
             if metric.sharpe_ratio() > max_sharpe_ratio:
                 max_sharpe_ratio = metric.sharpe_ratio()
                 optimize_parameters['period'] = i
@@ -50,7 +50,7 @@ class Optimizer:
         for i in range(optimize_parameters['period'] - 5, optimize_parameters['period'] + 5):
             for j in range(1, 10):
                 pnl_per_trade, date_per_trade = backtesting.ORB_strategy(period=i, take_profit=2, condition_diff=j)
-                metric = Metric(pd.Series(pnl_per_trade), None, is_benchmark=True)
+                metric = Metric(pd.Series(pnl_per_trade), date_per_trade, None, is_benchmark=True)
                 if metric.sharpe_ratio() > max_sharpe_ratio:
                     max_sharpe_ratio = metric.sharpe_ratio()
                     optimize_parameters['period'] = i
@@ -59,7 +59,7 @@ class Optimizer:
 
         for i in range(1, 4):  
             pnl_per_trade, date_per_trade = backtesting.ORB_strategy(period=optimize_parameters['period'], take_profit=i, condition_diff=optimize_parameters['condition_diff'])
-            metric = Metric(pd.Series(pnl_per_trade), None, is_benchmark=True)
+            metric = Metric(pd.Series(pnl_per_trade), date_per_trade, None, is_benchmark=True)
             if metric.sharpe_ratio() > max_sharpe_ratio:
                 max_sharpe_ratio = metric.sharpe_ratio()
                 optimize_parameters['take_profit'] = i
@@ -81,7 +81,7 @@ class Optimizer:
         backtesting = Backtesting(self.data)
         for i in range(5, 150, 5):
             pnl_per_trade, date_per_trade = backtesting.VWAP_strategy(period=i, take_profit=2, condition_diff=1)
-            metric = Metric(pd.Series(pnl_per_trade), None, is_benchmark=True)
+            metric = Metric(pd.Series(pnl_per_trade), date_per_trade, None, is_benchmark=True)
             if metric.sharpe_ratio() > max_sharpe_ratio:
                 max_sharpe_ratio = metric.sharpe_ratio()
                 optimize_parameters['period'] = i
@@ -91,7 +91,7 @@ class Optimizer:
         for i in range(optimize_parameters['period'] - 5, optimize_parameters['period'] + 5):
             for j in range(1, 10):
                 pnl_per_trade, date_per_trade = backtesting.VWAP_strategy(period=i, take_profit=2, condition_diff=j)
-                metric = Metric(pd.Series(pnl_per_trade), None, is_benchmark=True)
+                metric = Metric(pd.Series(pnl_per_trade), date_per_trade, None, is_benchmark=True)
                 if metric.sharpe_ratio() > max_sharpe_ratio:
                     max_sharpe_ratio = metric.sharpe_ratio()
                     optimize_parameters['period'] = i
@@ -100,7 +100,7 @@ class Optimizer:
 
         for i in range(1, 4):
             pnl_per_trade, date_per_trade = backtesting.VWAP_strategy(period=optimize_parameters['period'], take_profit=i, condition_diff=optimize_parameters['condition_diff'])
-            metric = Metric(pd.Series(pnl_per_trade), None, is_benchmark=True)
+            metric = Metric(pd.Series(pnl_per_trade), None, date_per_trade, is_benchmark=True)
             if metric.sharpe_ratio() > max_sharpe_ratio:
                 max_sharpe_ratio = metric.sharpe_ratio()
                 optimize_parameters['take_profit'] = i

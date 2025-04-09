@@ -83,6 +83,11 @@ python run_backtesting.py -m 0 -s VWAP -p 0
 | VWAP strategy | 0.4          | 4.888%           | 5.01%         |
 | VNINDEX       | -0.26        | 67.91%           | -12.11%       |
 
+- Asset plot of the VWAP strategy with initial parameters, along with VNINDEX benchmark. 
+![Asset plot of initial backtesting results of the VWAP strategy, along with VNINDEX benchmark.](./doc/report/backtesting/VWAP_in_sample.png)
+- Asset plot of the ORB strategy with initial parameters, along with VNINDEX benchmark.
+![Asset plot of initial backtesting results of the ORB strategy, along with VNINDEX benchmark.](./doc/report/backtesting/ORB_in_sample.png)
+
 - For more detail, please read my [Backtesting report](./doc/report/backtesting/backtesting-report.pdf).  
 
 # Optimization
@@ -103,6 +108,12 @@ python run_backtesting.py -m 0 -s <ORB or VWAP> -p 1
 | ORB strategy  | 1.73         | 3.33%            | 10.89%        |
 | VWAP strategy | 1.75         | 3.23%            | 10.12%        |
 
+- Asset plot of the VWAP strategy with optimized parameters, along with VNINDEX benchmark.
+![optimzed_VWAP_insample](./doc/report/optimization/VWAP_in_sample.png)
+
+- Asset plot of the ORB strategy with optimized parameters, along with VNINDEX benchmark.
+![optimized_ORB_insample](./doc/report/optimization/ORB_in_sample.png)
+
 - For more detail, please read my [Optimization report](./doc/report/optimization/optimization-report.pdf). 
 
 # Out-of-sample Backtesting
@@ -120,6 +131,11 @@ python run_backtesting.py -m 1 -s <ORB or VWAP> -p 1
 | ORB strategy  | -0.91        | 3.12%            | -0.29%        |
 | VWAP strategy | 0.02         | 2.43%            | 2.98%         |
 
+- Asset plot of the VWAP strategy with optimized parameters, along with VNINDEX benchmark. 
+![VWAP_outsample](./doc/report/optimization/VWAP_out_sample.png)
+
+- Asset plot of the ORB strategy with optimized parameters, along with VNINDEX benchmark. 
+![ORB_outsample](./doc/report/optimization/ORB_out_sample.png)
 - For more detail, please read my [Backtesting report](./doc/report/backtesting/backtesting-report.pdf). 
 
 # Conclusion

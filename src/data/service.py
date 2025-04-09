@@ -56,7 +56,10 @@ class DataService:
         return matched
     
     def __fetch_vnindex(self, year):
-        from_date = f"{year}-01-01"
+        if year != 2021:
+            from_date = f"{year}-01-01"
+        else:
+            from_date = f"{year}-06-01"
         to_date = f"{year}-12-31"
 
         columns = ["Datetime", "Open", "Close"]
